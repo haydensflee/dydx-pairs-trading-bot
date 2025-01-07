@@ -39,7 +39,7 @@ async def main():
     # Construct Market Prices
     try:
       print("Fetching market prices, please allow 3 minutes...")
-      dataframeMarketPrices = ConstructMarketPrices(client)
+      dataframeMarketPrices = await ConstructMarketPrices(client)
     except Exception as e:
       print("Error constructing market prices: ", e)
       exit(1)
