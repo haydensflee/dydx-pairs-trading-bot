@@ -145,7 +145,7 @@ async def abort_all_positions(client):
       # Determine Market
       market = pos["market"]
 
-      # Determine Side
+      # Determine buy/sell to close position
       side = "BUY"
       if pos["side"] == "LONG":
         side = "SELL"
