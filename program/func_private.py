@@ -10,6 +10,15 @@ import json
 from datetime import datetime
 from pprint import pprint
 
+# ----- BOT FUNCTIONS ----- #
+
+# Check Order Status
+def CheckOrderStatus(client, orderID):
+  order = client.indexer_account.account.get_order(orderID)
+  if order["status"]:
+    return order["status"]
+  return "FAILED"
+
 # ----- ABORT ALL POSITIONS SUB-FUNCTIONS ----- #
 
 # Get Existing Order

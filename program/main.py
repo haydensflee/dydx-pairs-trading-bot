@@ -4,9 +4,9 @@ from constants import ABORT_ALL_POSITIONS, FIND_COINTEGRATED, PLACE_TRADES, MANA
 from func_connections import connect_dydx
 from func_private import abort_all_positions
 from func_public import ConstructMarketPrices
+from func_cointegration import StoreCointegrationResults
 
 async def main():
-
   # Message on start
   # send_message("Bot launch successful")
   print("hello world")
@@ -40,6 +40,17 @@ async def main():
     try:
       print("Fetching market prices, please allow 3 minutes...")
       dataframeMarketPrices = await ConstructMarketPrices(client)
+    except Exception as e:
+      print("Error constructing market prices: ", e)
+      exit(1)
+
+    # Store Cointegration Pairs
+    try:
+      print("Storing cointegration pairs...")
+      storesResult = StoreCointegrationResults(dataframeMarketPrices)
+      if storesResult != "saved":
+        print("Error storing cointegration pairs")
+        exit(1)
     except Exception as e:
       print("Error constructing market prices: ", e)
       exit(1)

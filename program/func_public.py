@@ -81,7 +81,7 @@ async def ConstructMarketPrices(client):
 
     # Append other prices to dataframe.
     # Note: You can limit the amount to loop through here to save time in development
-    for market in tradeableMarkets[1:5]:
+    for market in tradeableMarkets[1:]:
         closePricesAdd = await GetCandlesHistorical(client, market)
         dataframeAdd = pd.DataFrame(closePricesAdd)
         dataframeAdd.set_index("datetime", inplace=True)
