@@ -1,3 +1,7 @@
+'''
+func_bot_agent.py
+This file contains the BotAgent class, which is used to manage the opening and checking of trades. The BotAgent class is used by the main function in the main.py file to open and check trades. The BotAgent class is responsible for placing market orders, checking the status of orders, and cancelling orders. The BotAgent class is used to manage the trading process for the bot.
+'''
 from func_private import place_market_order, checkOrderStatus, cancel_order
 from datetime import datetime
 import time
@@ -103,6 +107,22 @@ class BotAgent:
 
     # Open trades
     async def openTrades(self):
+        """
+        Opens trades for a pair of markets by placing market orders sequentially.
+
+        This function performs the following steps:
+        1. Places a market order for the first market.
+        2. Checks if the first order is live.
+        3. Places a market order for the second market.
+        4. Checks if the second order is live.
+        5. If the second order fails, attempts to close the first order.
+
+        Returns:
+            dict: A dictionary containing the status and details of the orders.
+
+        Raises:
+            Exception: If there is an error placing any of the orders or checking their status.
+        """
 
         # Print status
         print("---")
@@ -137,7 +157,7 @@ class BotAgent:
         orderStatusM1 = await self.checkOrderStatusById(self.orderDict["orderIdM1"])
         print(orderStatusM1)
 
-        # Guard: Aborder if order failed
+        # Guard: Abort if order failed
         if orderStatusM1 != "live":
             self.orderDict["pairStatus"] = "ERROR"
             self.orderDict["comments"] = f"{self.market1} failed to fill"
@@ -174,7 +194,7 @@ class BotAgent:
         print("Checking second order status...")
         orderStatusM2 = await self.checkOrderStatusById(self.orderDict["orderIdM2"])
 
-        # Guard: Aborder if order failed
+        # Guard: Abort if order failed
         if orderStatusM2 != "live":
             self.orderDict["pairStatus"] = "ERROR"
             self.orderDict["comments"] = f"{self.market1} failed to fill"
