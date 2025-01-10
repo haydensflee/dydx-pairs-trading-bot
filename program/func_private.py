@@ -1,3 +1,7 @@
+'''
+func_private.py
+This file contains the functions that are used to interact with the dydx API. The functions in this file are used to place market orders, check the status of orders, and cancel orders. The functions in this file are used by the BotAgent class in the func_bot_agent.py file to manage opening and checking trades.
+'''
 from dydx_v4_client import MAX_CLIENT_ID, Order, OrderFlags
 from dydx_v4_client.node.market import Market, since_now
 from dydx_v4_client.indexer.rest.constants import OrderType
@@ -13,7 +17,17 @@ from pprint import pprint
 # ----- BOT FUNCTIONS ----- #
 
 # Check Order Status
-def CheckOrderStatus(client, orderID):
+def checkOrderStatus(client, orderID):
+  """
+  Check the status of an order using the provided client and order ID.
+
+  Args:
+    client: The client object used to interact with the trading platform's API.
+    orderID: The unique identifier of the order to check.
+
+  Returns:
+    str: The status of the order if available, otherwise "FAILED".
+  """
   order = client.indexer_account.account.get_order(orderID)
   if order["status"]:
     return order["status"]
