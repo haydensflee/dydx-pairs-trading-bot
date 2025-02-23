@@ -14,6 +14,24 @@ import json
 from datetime import datetime
 from pprint import pprint
 
+#  Get existing open positions
+async def isOpenPositions(client, market):
+  # Protect API
+  time.sleep(0.2)
+
+  # Get positions
+  response = await client.indexer_account.account.get_subaccount(DYDX_ADDRESS, 0)
+  open_positions = response["subaccount"]["openPerpetualPositions"]
+
+  # Determine if open
+  if len(open_positions) > 0:
+    for token in open_positions.keys():
+      if token == market:
+        return True
+    
+  # Return False
+  return False
+
 # ----- BOT FUNCTIONS ----- #
 
 # Check Order Status

@@ -53,26 +53,35 @@ def CalculateZScore(spread):
 
 
 # Calculate Cointegration
-def CalculateCointegration(series1, series2):
-    series1 = np.array(series1).astype(np.float64)
-    series2 = np.array(series2).astype(np.float64)
-    cointFlag = 0
-    cointRes = coint(series1, series2)
-    cointT = cointRes[0]
-    pValue = cointRes[1]
-    criticalValue = cointRes[2][1]
+def CalculateCointegration(series_1, series_2):
+  series_1 = np.array(series_1).astype(np.float64)
+  series_2 = np.array(series_2).astype(np.float64)
+  coint_flag = 0
+  coint_res = coint(series_1, series_2)
+  print("stattools coint success")
+#   print(series_1)
+#   print(series_2)
+  coint_t = coint_res[0]
+  p_value = coint_res[1]
+  critical_value = coint_res[2][1]
 
-    # Better way to fit data vs older version
-    series2WithConstant = sm.add_constant(series2) 
-    model = sm.OLS(series1, series2WithConstant).fit()
-    hedgeRatio = model.params[1]
-    intercept = model.params[0]
+  # Better way to fit data vs older version
+  series_2_with_constant = sm.add_constant(series_2) 
+#   print(series_1,series_2_with_constant, series_2)
 
-    spread = series1 - (series2 * hedgeRatio) - intercept
-    halfLife = HalfLifeMeanReversion(spread)
-    tCheck = cointT < criticalValue
-    cointFlag = 1 if pValue < 0.05 and tCheck else 0
-    return cointFlag, hedgeRatio, halfLife
+  model = sm.OLS(series_1, series_2_with_constant).fit()
+  print("model fitted")
+  hedge_ratio = model.params[1]
+  intercept = model.params[0]
+#   print("hr and intercept", hedge_ratio,intercept)
+
+  spread = series_1 - (series_2  * hedge_ratio) - intercept
+#   print("spread: ", spread)
+  half_life = HalfLifeMeanReversion(spread)
+  t_check = coint_t < critical_value
+  coint_flag = 1 if p_value < 0.05 and t_check else 0
+  print("calc coint done")
+  return coint_flag, hedge_ratio, half_life
 
 
 # Store Cointegration Results
@@ -112,14 +121,18 @@ def StoreCointegrationResults(dfMarketPrices):
     # Start with our base pair
     for index, baseMarket in enumerate(markets[:-1]):
         series1 = dfMarketPrices[baseMarket].values.astype(np.float64).tolist()
-
+        print(len(series1))
         # Get Quote Pair
-        for quoteMarket in markets[index + 1:]:
+        for quoteMarket in markets[index +1:]:
             series2 = dfMarketPrices[quoteMarket].values.astype(np.float64).tolist()
-
+            print(len(series1), len(series2))
+            if series2==series1:
+                print("same series")
+                continue
+         
             # Check cointegration
             cointFlag, hedgeRatio, halfLife = CalculateCointegration(series1, series2)
-
+            print("coint calc done")
             # Log pair
             if cointFlag == 1 and halfLife <= MAX_HALF_LIFE and halfLife > 0:
                 criteriaMetPairs.append({

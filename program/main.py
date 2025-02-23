@@ -6,6 +6,10 @@ from func_private import abort_all_positions
 from func_public import ConstructMarketPrices
 from func_cointegration import StoreCointegrationResults
 
+
+import sys, os
+
+
 async def main():
   # Message on start
   # send_message("Bot launch successful")
@@ -40,6 +44,9 @@ async def main():
     try:
       print("Fetching market prices, please allow 3 minutes...")
       dataframeMarketPrices = await ConstructMarketPrices(client)
+      print("---")
+      print(dataframeMarketPrices)
+      print("---")
     except Exception as e:
       print("Error constructing market prices: ", e)
       exit(1)
@@ -52,9 +59,25 @@ async def main():
         print("Error storing cointegration pairs")
         exit(1)
     except Exception as e:
-      print("Error constructing market prices: ", e)
+      print("Error saving cointegrated pairs: ", e)
+      exc_type, exc_obj, exc_tb = sys.exc_info()
+      fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
+      print(exc_type, fname, exc_tb.tb_lineno)
+      # send_message(f"Error saving cointegrated pairs {e}")
       exit(1)
 
+# # managing existing trades and while true loop here
+
+
+#   # Place trades for opening positions
+#   if PLACE_TRADES:
+#     try:
+#       print("")
+#       print("Finding trading opportunities...")
+#       await open_positions(client)
+#     except Exception as e:
+#       print("Error trading pairs: ", e)
+#       exit(1)
 
 if __name__ == "__main__":
     asyncio.run(main())

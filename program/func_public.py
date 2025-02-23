@@ -13,6 +13,33 @@ from constants import RESOLUTION
 # Get relevant time periods for ISO from and to
 ISOTimes = get_ISO_times()
 
+pprint(ISOTimes)
+
+# Get Candles Recent. Pulls recent prices to calculate current zscore
+async def getCandlesRecent(client, market):
+
+  # Define output
+  close_prices = []
+
+  # Protect API
+  time.sleep(0.2)
+
+  # Get Prices from DYDX V4
+  response = await client.indexer.markets.get_perpetual_market_candles(
+    market = market, 
+    resolution = RESOLUTION
+  )
+  # Candles
+  candles = response
+  # Structure data
+  for candle in candles["candles"]:
+    close_prices.append(candle["close"])
+
+  # Construct and return close price series
+  close_prices.reverse()
+  prices_result = np.array(close_prices).astype(np.float64)
+  return prices_result
+
 # Function for candlestick data from iso time history
 async def GetCandlesHistorical(client, market):
     """
@@ -25,20 +52,20 @@ async def GetCandlesHistorical(client, market):
     for timeframe in ISOTimes.keys():
         # Confirm times needed
         timeframeObject = ISOTimes[timeframe]
-        fromTimeframe = timeframeObject["from_iso"]
-        toTimeframe = timeframeObject["to_iso"]
+        fromTimeframe = timeframeObject["from_iso"]+ ".000Z"
+        toTimeframe = timeframeObject["to_iso"]+ ".000Z"
 
         # Protect rate limits/api
         time.sleep(0.2)
 
-        candles = await client.indexer.markets.get_perpetual_market_candles(
+        response = await client.indexer.markets.get_perpetual_market_candles(
             market = market, 
             resolution = RESOLUTION, 
             from_iso = fromTimeframe,
             to_iso = toTimeframe,
             limit = 100
         )
-
+        candles=response
         # STructure data
         for candle in candles["candles"]:
             closePrices.append({
@@ -69,7 +96,7 @@ async def ConstructMarketPrices(client):
 
         if marketInfo["status"] == "ACTIVE":
             tradeableMarkets.append(market)
-
+    print("tradeable pairs found")
     # Set initial dataframe to store all prices. Later we can see which ones are cointegrated.
     closePrices = await GetCandlesHistorical(client, tradeableMarkets[0])
     # Example price: {'BTC-USD': '96640', 'datetime': '2024-12-22T06:00:00.000Z'}
@@ -81,11 +108,38 @@ async def ConstructMarketPrices(client):
 
     # Append other prices to dataframe.
     # Note: You can limit the amount to loop through here to save time in development
-    for market in tradeableMarkets[1:]:
+    # for market in tradeableMarkets[0:5]:
+    #     print(market)
+    #     closePricesAdd = await GetCandlesHistorical(client, market)
+    #     dataframeAdd = pd.DataFrame(closePricesAdd)
+    #     try:
+    #         dataframeAdd.set_index("datetime", inplace=True)
+    #         dataframe = pd.merge(dataframe, dataframeAdd, how="outer", on="datetime", copy=False)
+    #     except Exception as e:
+    #         print(f"Failed to add {market} - {e}")
+    #     del dataframeAdd
+    firstMarketLength=len(await GetCandlesHistorical(client, tradeableMarkets[0]))
+    for (i, market) in enumerate(tradeableMarkets[0:]):
+        print(f"Extracting prices for {i + 1} of {len(tradeableMarkets)} tokens for {market}")
         closePricesAdd = await GetCandlesHistorical(client, market)
+        if len(closePricesAdd) < firstMarketLength:
+            print(f"Skipping {market} due to insufficient data")
+            continue
+        
+        print("history length: ",len(closePricesAdd), firstMarketLength)
         dataframeAdd = pd.DataFrame(closePricesAdd)
-        dataframeAdd.set_index("datetime", inplace=True)
-        dataframe = pd.merge(dataframe, dataframeAdd, how="outer", on="datetime", copy=False)
+        print(dataframeAdd.values, dataframeAdd.values[:,1])
+        if dataframeAdd.values[:,1].max() == dataframeAdd.values[:,1].min():
+            print(f"Skipping {market} due to no price variation")
+            continue
+        print(dataframeAdd.shape)
+        try:
+            dataframeAdd.set_index("datetime", inplace=True)
+            dataframe = pd.merge(dataframe, dataframeAdd, how="outer", on="datetime", copy=False)
+            print(dataframe.shape)
+            print("---")
+        except Exception as e: 
+            print(f"Failed to add {market} - {e}")
         del dataframeAdd
 
      # Check any columns with NaNs
@@ -96,32 +150,6 @@ async def ConstructMarketPrices(client):
         dataframe.drop(columns=nans, inplace=True)
 
     # Return result
-    print(dataframe)
+    print("ConstructMarketPrices done")
+    print(len(dataframe))
     return dataframe
-  # Get markets
-    markets = await client.indexer.markets.get_perpetual_markets()
-    # markets = markets["markets"].keys()
-
-    # Initialize
-    market_prices = {}
-    print("test")
-
-    # Get market prices
-    counter=0
-    for market in markets["markets"].keys():
-        counter+=1
-        ticker = market["market"]
-        try:
-            market_price = await client.indexer.markets.get_market_price(ticker)
-            market_prices[ticker] = market_price
-        except Exception as e:
-            print(f"Error fetching market price for {ticker}: {e}")
-        if counter==5:
-            break
-    # Construct dataframe
-    dataframeMarketPrices = pd.DataFrame(market_prices).T
-    dataframeMarketPrices.columns = ["price"]
-
-    # Return
-    print(dataframeMarketPrices)
-    return dataframeMarketPrices
