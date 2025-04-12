@@ -5,7 +5,7 @@ from func_connections import connect_dydx
 from func_private import abort_all_positions
 from func_public import ConstructMarketPrices
 from func_cointegration import StoreCointegrationResults
-
+from func_entry_pairs import openPositions
 
 import sys, os
 
@@ -69,15 +69,15 @@ async def main():
 # # managing existing trades and while true loop here
 
 
-#   # Place trades for opening positions
-#   if PLACE_TRADES:
-#     try:
-#       print("")
-#       print("Finding trading opportunities...")
-#       await open_positions(client)
-#     except Exception as e:
-#       print("Error trading pairs: ", e)
-#       exit(1)
+  # Place trades for opening positions
+  if PLACE_TRADES:
+    try:
+      print("")
+      print("Finding trading opportunities...")
+      await openPositions(client)
+    except Exception as e:
+      print("Error trading pairs: ", e)
+      exit(1)
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -43,12 +43,22 @@ def HalfLifeMeanReversion(series):
 
 
 # Calculate ZScore
-def CalculateZScore(spread):
+def calculateZScore(spread):
     spreadSeries = pd.Series(spread)
+    # print(spreadSeries)
     mean = spreadSeries.rolling(center=False, window=WINDOW).mean()
     std = spreadSeries.rolling(center=False, window=WINDOW).std()
     x = spreadSeries.rolling(center=False, window=1).mean()
     zScore = (x - mean) / std
+    # print("mean: ", mean.values.tolist()[-1])
+    # print("std: ", std.values.tolist()[-1])
+    # print(std)
+    # print("x: ", x.values.tolist()[-1])
+    # print("zScore: ", zScore.values.tolist()[-1])
+    # Check for NaN values
+    # if np.isnan(zScore).any():
+    #     raise SmartError("NaN values found in zScore calculation.")
+    # # Check for infinite values
     return zScore
 
 
@@ -121,18 +131,15 @@ def StoreCointegrationResults(dfMarketPrices):
     # Start with our base pair
     for index, baseMarket in enumerate(markets[:-1]):
         series1 = dfMarketPrices[baseMarket].values.astype(np.float64).tolist()
-        print(len(series1))
         # Get Quote Pair
         for quoteMarket in markets[index +1:]:
             series2 = dfMarketPrices[quoteMarket].values.astype(np.float64).tolist()
-            print(len(series1), len(series2))
             if series2==series1:
                 print("same series")
                 continue
          
             # Check cointegration
             cointFlag, hedgeRatio, halfLife = CalculateCointegration(series1, series2)
-            print("coint calc done")
             # Log pair
             if cointFlag == 1 and halfLife <= MAX_HALF_LIFE and halfLife > 0:
                 criteriaMetPairs.append({

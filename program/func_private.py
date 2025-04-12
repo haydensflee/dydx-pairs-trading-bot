@@ -14,6 +14,11 @@ import json
 from datetime import datetime
 from pprint import pprint
 
+# Get Account
+async def get_account(client):
+  account = await client.indexer_account.account.get_subaccount(DYDX_ADDRESS, 0)
+  return account["subaccount"]
+
 #  Get existing open positions
 async def isOpenPositions(client, market):
   # Protect API
@@ -34,19 +39,9 @@ async def isOpenPositions(client, market):
 
 # ----- BOT FUNCTIONS ----- #
 
-# Check Order Status
-def checkOrderStatus(client, orderID):
-  """
-  Check the status of an order using the provided client and order ID.
-
-  Args:
-    client: The client object used to interact with the trading platform's API.
-    orderID: The unique identifier of the order to check.
-
-  Returns:
-    str: The status of the order if available, otherwise "FAILED".
-  """
-  order = client.indexer_account.account.get_order(orderID)
+# Check order status
+async def checkOrderStatus(client, order_id):
+  order = await client.indexer_account.account.get_order(order_id)
   if order["status"]:
     return order["status"]
   return "FAILED"
@@ -157,7 +152,7 @@ async def place_market_order(client, market, side, size, price, reduce_only):
 
 # Abort all open positions
 async def abort_all_positions(client):
-  
+  print("abort all")
   # Cancel all orders
   await cancel_all_orders(client)
 
@@ -172,14 +167,17 @@ async def abort_all_positions(client):
 
   # Get all open positions
   positions = await get_open_positions(client)
-
+  bot_agents = []
+  print('replace bot_agents with empty list')
+  with open("bot_agents.json", "w") as f:
+    json.dump(bot_agents, f)
   # Handle open positions
   close_orders = []
   if len(positions) > 0:
 
     # Loop through each position
     for item in positions.keys():
-      
+      print(item)
       # Get Position
       pos = positions[item]
 
@@ -206,7 +204,7 @@ async def abort_all_positions(client):
         accept_price,
         True
       )
-
+      print("append results")
       # Append the result
       close_orders.append(order)
 
@@ -215,6 +213,7 @@ async def abort_all_positions(client):
 
     # Override json file with empty list
     bot_agents = []
+    print('replace bot_agents with empty list')
     with open("bot_agents.json", "w") as f:
       json.dump(bot_agents, f)
 

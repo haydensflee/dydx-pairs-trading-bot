@@ -108,16 +108,6 @@ async def ConstructMarketPrices(client):
 
     # Append other prices to dataframe.
     # Note: You can limit the amount to loop through here to save time in development
-    # for market in tradeableMarkets[0:5]:
-    #     print(market)
-    #     closePricesAdd = await GetCandlesHistorical(client, market)
-    #     dataframeAdd = pd.DataFrame(closePricesAdd)
-    #     try:
-    #         dataframeAdd.set_index("datetime", inplace=True)
-    #         dataframe = pd.merge(dataframe, dataframeAdd, how="outer", on="datetime", copy=False)
-    #     except Exception as e:
-    #         print(f"Failed to add {market} - {e}")
-    #     del dataframeAdd
     firstMarketLength=len(await GetCandlesHistorical(client, tradeableMarkets[0]))
     for (i, market) in enumerate(tradeableMarkets[0:]):
         print(f"Extracting prices for {i + 1} of {len(tradeableMarkets)} tokens for {market}")
@@ -126,18 +116,12 @@ async def ConstructMarketPrices(client):
             print(f"Skipping {market} due to insufficient data")
             continue
         
-        print("history length: ",len(closePricesAdd), firstMarketLength)
         dataframeAdd = pd.DataFrame(closePricesAdd)
-        print(dataframeAdd.values, dataframeAdd.values[:,1])
         if dataframeAdd.values[:,1].max() == dataframeAdd.values[:,1].min():
-            print(f"Skipping {market} due to no price variation")
             continue
-        print(dataframeAdd.shape)
         try:
             dataframeAdd.set_index("datetime", inplace=True)
             dataframe = pd.merge(dataframe, dataframeAdd, how="outer", on="datetime", copy=False)
-            print(dataframe.shape)
-            print("---")
         except Exception as e: 
             print(f"Failed to add {market} - {e}")
         del dataframeAdd
@@ -150,6 +134,4 @@ async def ConstructMarketPrices(client):
         dataframe.drop(columns=nans, inplace=True)
 
     # Return result
-    print("ConstructMarketPrices done")
-    print(len(dataframe))
     return dataframe
