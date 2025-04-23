@@ -6,6 +6,7 @@ from func_private import abort_all_positions
 from func_public import ConstructMarketPrices
 from func_cointegration import StoreCointegrationResults
 from func_entry_pairs import openPositions
+from func_exit_pairs import manage_trade_exits
 
 import sys, os
 
@@ -67,17 +68,28 @@ async def main():
       exit(1)
 
 # # managing existing trades and while true loop here
+ # Manage existing positions
+  while True:
+    if MANAGE_EXITS:
+      try:
+        print("")
+        print("Managing exits...")
+        await manage_trade_exits(client)
+        time.sleep(1)
+      except Exception as e:
+        print("Error managing exiting positions: ", e)
+        # send_message(f"Error managing exiting positions {e}")
+        exit(1)
 
-
-  # Place trades for opening positions
-  if PLACE_TRADES:
-    try:
-      print("")
-      print("Finding trading opportunities...")
-      await openPositions(client)
-    except Exception as e:
-      print("Error trading pairs: ", e)
-      exit(1)
+    # Place trades for opening positions
+    if PLACE_TRADES:
+      try:
+        print("")
+        print("Finding trading opportunities...")
+        await openPositions(client)
+      except Exception as e:
+        print("Error trading pairs: ", e)
+        exit(1)
 
 if __name__ == "__main__":
     asyncio.run(main())

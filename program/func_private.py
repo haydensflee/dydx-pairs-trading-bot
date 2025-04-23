@@ -89,6 +89,7 @@ async def get_open_positions(client):
 # Place market order
 async def place_market_order(client, market, side, size, price, reduce_only):
 
+  print("place_market_order")
   # Initialize
   ticker = market
   current_block = await client.node.latest_block_height()
@@ -98,7 +99,7 @@ async def place_market_order(client, market, side, size, price, reduce_only):
 
   # Set Time In Force
   time_in_force = Order.TIME_IN_FORCE_UNSPECIFIED
-
+  print("time_in_force")
   # Place Market Order
   order = await client.node.place_order(
     client.wallet,
@@ -113,7 +114,9 @@ async def place_market_order(client, market, side, size, price, reduce_only):
       good_til_block = good_til_block
     ),
   )
+  print("order placed in client")
 
+  # EVERYTHING BELOW THIS IS NEW 2024.
   # Get Recent Orders
   # We do this as in the current V4 version at the time of developing this, the order response does not return the order number
   time.sleep(1.5)
@@ -123,19 +126,28 @@ async def place_market_order(client, market, side, size, price, reduce_only):
     ticker, 
     return_latest_orders = "true",
   )
-
+  print("get recent order")
+  # print("Orders:", orders)
   # Get latest order id
   order_id = ""
   for order in orders:
     client_id = int(order["clientId"])
     clob_pair_id = int(order["clobPairId"])
     order["createdAtHeight"] = int(order["createdAtHeight"])
+    print("Client ID:", client_id)
+    print("Clob Pair ID:", clob_pair_id)
+    print(market_order_id.client_id)
+    print(market_order_id.clob_pair_id)
     if client_id == market_order_id.client_id and clob_pair_id == market_order_id.clob_pair_id:
       order_id = order["id"]
       break
-
+  print(order["id"])
+  print("Order ID:", order_id)
   # Ensure latest order
+  print("orders")
+  print(orders)
   if order_id == "":
+    print("empty order id?")
     sorted_orders = sorted(orders, key=lambda x: x["createdAtHeight"], reverse=True)
     pprint("last order:", sorted_orders[0])
     print("Warning: Unable to detect latest order. Please check dashboard")
@@ -144,6 +156,7 @@ async def place_market_order(client, market, side, size, price, reduce_only):
   # Print something if error returned
   if "code" in str(order):
     print(order)
+  print("place_market_order finish")
 
   # Return result
   return (order, order_id)

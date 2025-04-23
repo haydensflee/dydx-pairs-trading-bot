@@ -6,6 +6,8 @@ from dydx_v4_client import NodeClient, Wallet
 from dydx_v4_client.indexer.rest.indexer_client import IndexerClient
 from dydx_v4_client.network import TESTNET
 from constants import INDEXER_ACCOUNT_ENDPOINT, INDEXER_ENDPOINT_MAINNET, MNEMONIC, DYDX_ADDRESS, MARKET_DATA_MODE
+from func_public import getCandlesRecent
+
 
 # Client Class
 class Client:
@@ -31,33 +33,33 @@ async def connect_dydx():
   node = await NodeClient.connect(TESTNET.node)
   wallet = await Wallet.from_mnemonic(node, MNEMONIC, DYDX_ADDRESS)
   client = Client(indexer, indexer_account, node, wallet)
-#   await check_juristiction(client, "BTC-USD")
+  # await check_juristiction(client, "BTC-USD")
   return client
 
-# # Check Juristiction
-# # DYDX no longer allows trading in certain countries and blocks API access too
-# # This function serves as a check
-# async def check_juristiction(client, market):
+# Check Juristiction
+# DYDX no longer allows trading in certain countries and blocks API access too
+# This function serves as a check
+async def check_juristiction(client, market):
 
-#   print("Checking Juristiction...")
+  print("Checking Juristiction...")
 
-#   try:
-#     await get_candles_recent(client, market)
-#     print(" ")
-#     print("--------------------------------------------------------------------------------")
-#     print("SUCCESS: CONNECTION WORKING")
-#     print("--------------------------------------------------------------------------------")
-#     print(" ")
-#   except Exception as e:
-#     print(e)
-#     if "403" in str(e):
-#       print(" ")
-#       print("--------------------------------------------------------------------------------")
-#       print("FAILED: LOCATION ACCESS LIKELY PROHIBTIED")
-#       print("--------------------------------------------------------------------------------")
-#       print(" ")
-#       print("DYDX likely prohibits use from your county")
-#       print("Theoretically for learning purposes, you could use a VPN to get around this")
-#       print("However we cannot advise you to do this")
-#       print(" ")
-#     exit(1)
+  try:
+    await getCandlesRecent(client, market)
+    print(" ")
+    print("--------------------------------------------------------------------------------")
+    print("SUCCESS: CONNECTION WORKING")
+    print("--------------------------------------------------------------------------------")
+    print(" ")
+  except Exception as e:
+    print(e)
+    if "403" in str(e):
+      print(" ")
+      print("--------------------------------------------------------------------------------")
+      print("FAILED: LOCATION ACCESS LIKELY PROHIBTIED")
+      print("--------------------------------------------------------------------------------")
+      print(" ")
+      print("DYDX likely prohibits use from your county")
+      print("Theoretically for learning purposes, you could use a VPN to get around this")
+      print("However we cannot advise you to do this")
+      print(" ")
+    exit(1)

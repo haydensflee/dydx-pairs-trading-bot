@@ -125,7 +125,6 @@ async def openPositions(client):
               break
             print(base_market, base_side, base_size, accept_base_price)
             print(quote_market, quote_side, quote_size, accept_quote_price)
-            exit(1)
             
             # Create Bot Agent
             bot_agent = BotAgent(
@@ -143,7 +142,7 @@ async def openPositions(client):
               halfLife=half_life,
               hedgeRatio=hedge_ratio
             )
-
+            print("bot agent created")
             # Open Trades
             bot_open_dict = await bot_agent.openTrades()
 
@@ -165,7 +164,7 @@ async def openPositions(client):
               # Confirm live status in print
               print("Trade status: Live")
               print("---")
-
+    # exit(1) # TODO: remove this after testing
   # Save agents
   print(f"Success: Manage open trades checked")
   if len(bot_agents) > 0:
