@@ -149,9 +149,11 @@ async def place_market_order(client, market, side, size, price, reduce_only):
   if order_id == "":
     print("empty order id?")
     sorted_orders = sorted(orders, key=lambda x: x["createdAtHeight"], reverse=True)
-    pprint("last order:", sorted_orders[0])
+    print("last order:")
+    pprint(sorted_orders[0])
     print("Warning: Unable to detect latest order. Please check dashboard")
-    exit(1)
+    order_id = sorted_orders[0]["id"]
+    # exit(1)
 
   # Print something if error returned
   if "code" in str(order):

@@ -48,20 +48,20 @@ async def manage_trade_exits(client):
     is_close = False
 
     # Extract position matching information from file - market 1
-    position_market_m1 = position["market_1"]
-    position_size_m1 = position["order_m1_size"]
-    position_side_m1 = position["order_m1_side"]
+    position_market_m1 = position["market1"]
+    position_size_m1 = position["orderM1Size"]
+    position_side_m1 = position["orderM1Side"]
 
     # Extract position matching information from file - market 2
-    position_market_m2 = position["market_2"]
-    position_size_m2 = position["order_m2_size"]
-    position_side_m2 = position["order_m2_side"]
+    position_market_m2 = position["market2"]
+    position_size_m2 = position["orderM2Size"]
+    position_side_m2 = position["orderM2Size"]
 
     # Protect API
     time.sleep(0.5)
 
     # Get order info m1 per exchange
-    order_m1 = await get_order(client, position["order_id_m1"])
+    order_m1 = await get_order(client, position["orderIdM1"])
     order_market_m1 = order_m1["ticker"]
     order_size_m1 = order_m1["size"]
     order_side_m1 = order_m1["side"]
@@ -70,7 +70,7 @@ async def manage_trade_exits(client):
     time.sleep(0.5)
 
     # Get order info m2 per exchange
-    order_m2 = await get_order(client, position["order_id_m2"])
+    order_m2 = await get_order(client, position["orderIdM2"])
     order_market_m2 = order_m2["ticker"]
     order_size_m2 = order_m2["size"]
     order_side_m2 = order_m2["side"]

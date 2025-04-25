@@ -156,8 +156,9 @@ async def openPositions(client):
               # Append to list of bot agents
               bot_agents.append(bot_open_dict)
               del(bot_open_dict)
-
+            
               # Save trade
+              print("Trade status: Live. Saving to file...")
               with open("bot_agents.json", "w") as f:
                 json.dump(bot_agents, f)
 

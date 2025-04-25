@@ -192,8 +192,10 @@ class BotAgent:
 
         # Ensure order is live before processing
         print("Checking second order status...")
+        print(self.orderDict["orderIdM2"])
+        print(self.orderDict)
         orderStatusM2 = await self.checkOrderStatusById(self.orderDict["orderIdM2"])
-
+        print("Order status M2: ", orderStatusM2)
         # Guard: Abort if order failed
         if orderStatusM2 != "live":
             self.orderDict["pairStatus"] = "ERROR"
