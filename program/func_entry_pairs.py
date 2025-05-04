@@ -2,7 +2,7 @@ from constants import ZSCORE_THRESH, USD_PER_TRADE, USD_MIN_COLLATERAL
 from func_utils import format_number
 from func_public import getCandlesRecent
 from func_cointegration import calculateZScore
-from func_private import isOpenPositions, get_markets, get_account
+from func_private import isOpenPositions, get_account
 from func_bot_agent import BotAgent
 import pandas as pd
 import json
@@ -23,7 +23,7 @@ async def openPositions(client):
   df = pd.read_csv("cointegrated_pairs.csv")
 
   # Get markets from referencing of min order size, tick size etc
-  markets = await get_markets(client)
+  markets = await client.indexer.markets.get_perpetual_markets()
 
   # Initialize container for BotAgent results
   bot_agents = []
@@ -63,7 +63,7 @@ async def openPositions(client):
       spread = series_1 - (hedge_ratio * series_2)
       z_score = calculateZScore(spread).values.tolist()[-1]
       # print("spread: ", spread)
-      print(f"Z-Score: {z_score} for {base_market} and {quote_market}")
+      # print(f"Z-Score: {z_score} for {base_market} and {quote_market}")
       # Establish if potential trade
       if abs(z_score) >= ZSCORE_THRESH:
 

@@ -55,7 +55,7 @@ async def manage_trade_exits(client):
     # Extract position matching information from file - market 2
     position_market_m2 = position["market2"]
     position_size_m2 = position["orderM2Size"]
-    position_side_m2 = position["orderM2Size"]
+    position_side_m2 = position["orderM2Side"]
 
     # Protect API
     time.sleep(0.5)
@@ -84,7 +84,12 @@ async def manage_trade_exits(client):
     check_m1 = position_market_m1 == order_market_m1 and position_size_m1 == order_size_m1 and position_side_m1 == order_side_m1
     check_m2 = position_market_m2 == order_market_m2 and position_size_m2 == order_size_m2 and position_side_m2 == order_side_m2
     check_live = position_market_m1 in markets_live and position_market_m2 in markets_live
+    print(check_m1, check_m2, check_live)
+    print(position_market_m1 in markets_live, position_market_m2 in markets_live)
 
+    print(position_market_m2, order_market_m2)
+    print(position_size_m2, order_size_m2)
+    print(position_side_m2, order_side_m2)
     # Guard: If not all match exit with error
     if not check_m1 or not check_m2 or not check_live:
       print(f"Warning: Not all open positions match exchange records for {position_market_m1} and {position_market_m2}")
@@ -108,8 +113,8 @@ async def manage_trade_exits(client):
     if CLOSE_AT_ZSCORE_CROSS:
 
       # Initialize z_scores
-      hedge_ratio = position["hedge_ratio"]
-      z_score_traded = position["z_score"]
+      hedge_ratio = position["hedgeRatio"]
+      z_score_traded = position["zScore"]
       if len(series_1) > 0 and len(series_1) == len(series_2):
         spread = series_1 - (hedge_ratio * series_2)
         z_score_current = calculateZScore(spread).values.tolist()[-1]

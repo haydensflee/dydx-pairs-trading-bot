@@ -158,9 +158,13 @@ class BotAgent:
         print(orderStatusM1)
 
         # Guard: Abort if order failed
-        if orderStatusM1 != "live":
-            self.orderDict["pairStatus"] = "ERROR"
+        # Guard: Aborder if order failed
+        if orderStatusM1 != "live" or baseOrder==-1:
+            print("first order failed")
+            self.orderDict["pair_status"] = "ERROR"
             self.orderDict["comments"] = f"{self.market1} failed to fill"
+            print(self.orderDict["orderIdM1"],baseOrder)
+            return "failed"
             return self.orderDict
 
         # Print status - opening second order
@@ -196,11 +200,12 @@ class BotAgent:
         print(self.orderDict)
         orderStatusM2 = await self.checkOrderStatusById(self.orderDict["orderIdM2"])
         print("Order status M2: ", orderStatusM2)
+        print("quoteOrder: ", quoteOrder)
         # Guard: Abort if order failed
-        if orderStatusM2 != "live":
+        if orderStatusM2 != "live" or quoteOrder==-1:
             self.orderDict["pairStatus"] = "ERROR"
             self.orderDict["comments"] = f"{self.market1} failed to fill"
-
+            print("abort due to order failure")
             # Close order 1:
             try:
                 (closeOrder, orderId) = await place_market_order(
@@ -231,7 +236,7 @@ class BotAgent:
 
                 # ABORT
                 exit(1)
-
+            return "failed"
         # Return success result
         else:
             print("")
