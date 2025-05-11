@@ -7,14 +7,15 @@ from func_public import ConstructMarketPrices
 from func_cointegration import StoreCointegrationResults
 from func_entry_pairs import openPositions
 from func_exit_pairs import manage_trade_exits
+from func_messaging import send_message
 
 import sys, os
 
 
 async def main():
   # Message on start
-  # send_message("Bot launch successful")
-  print("hello world")
+  send_message("Bot launch successful")
+  exit(0)
 
   # Connect to client
   try:
