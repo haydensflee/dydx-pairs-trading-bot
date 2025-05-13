@@ -4,6 +4,7 @@ This file contains the BotAgent class, which is used to manage the opening and c
 '''
 from func_private import place_market_order, checkOrderStatus, cancel_order
 from datetime import datetime
+from func_messaging import send_message
 import time
 
 from pprint import pprint
@@ -224,7 +225,7 @@ class BotAgent:
                     print("ABORT PROGRAM")
                     print("Unexpected Error")
                     print(orderStatusCloseOrder)
-
+                    send_message(f"Failed to execute. Code red. Error code: 100")
                     # ABORT
                     exit(1)
             except Exception as e:
@@ -234,6 +235,7 @@ class BotAgent:
                 print("Unexpected Error")
                 print(orderStatusCloseOrder)
 
+                send_message(f"Failed to execute. Code red. Error code: 101")
                 # ABORT
                 exit(1)
             return "failed"

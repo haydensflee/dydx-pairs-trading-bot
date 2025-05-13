@@ -15,7 +15,6 @@ import sys, os
 async def main():
   # Message on start
   send_message("Bot launch successful")
-  exit(0)
 
   # Connect to client
   try:
@@ -25,6 +24,7 @@ async def main():
     client = await connect_dydx()
   except Exception as e:
     print("Error connecting to client: ", e)
+    send_message(f"Error connecting to client {e}")
     exit(1)
 
 #   # Abort all open positions
@@ -35,7 +35,7 @@ async def main():
       await abort_all_positions(client)
     except Exception as e:
       print("Error closing all positions: ", e)
-      # send_message(f"Error closing all positions {e}")
+      send_message(f"Error closing all positions {e}")
       exit(1)
 
   # Need to be able to get all market prices. Put into table, then find, based on prices, which pairs are cointegrated
@@ -51,6 +51,7 @@ async def main():
       print("---")
     except Exception as e:
       print("Error constructing market prices: ", e)
+      send_message(f"Error constructing market prices {e}")
       exit(1)
 
     # Store Cointegration Pairs
@@ -65,7 +66,7 @@ async def main():
       exc_type, exc_obj, exc_tb = sys.exc_info()
       fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
       print(exc_type, fname, exc_tb.tb_lineno)
-      # send_message(f"Error saving cointegrated pairs {e}")
+      send_message(f"Error saving cointegrated pairs {e}")
       exit(1)
 
 # # managing existing trades and while true loop here
@@ -79,7 +80,7 @@ async def main():
         time.sleep(1)
       except Exception as e:
         print("Error managing exiting positions: ", e)
-        # send_message(f"Error managing exiting positions {e}")
+        send_message(f"Error managing exiting positions {e}")
         exit(1)
 
     # Place trades for opening positions
@@ -90,6 +91,7 @@ async def main():
         await openPositions(client)
       except Exception as e:
         print("Error trading pairs: ", e)
+        send_message(f"Error opening trades {e}")
         exit(1)
 
 if __name__ == "__main__":
