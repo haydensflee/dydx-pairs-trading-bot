@@ -1,1 +1,1 @@
-[{"market1": "ETH-USD", "market2": "DOGE-USD", "hedgeRatio": 9401.339740985137, "zScore": 1.1537166364883862, "halfLife": 9.10635722959142, "orderIdM1": "bcc9e692-341e-5a2c-b1ac-3a71aeaa80c3", "orderM1Size": "0.004", "orderM1Side": "SELL", "orderTimeM1": "2025-05-11T20:53:54.963984", "orderIdM2": "ca07b447-3d1e-5a40-97f9-fb5de267fcd4", "orderM2Size": "42", "orderM2Side": "BUY", "orderTimeM2": "2025-05-11T20:54:16.329971", "pairStatus": "LIVE", "comments": ""}]
+[]
