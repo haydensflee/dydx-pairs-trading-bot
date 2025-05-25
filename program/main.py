@@ -8,15 +8,18 @@ from func_cointegration import StoreCointegrationResults
 from func_entry_pairs import openPositions
 from func_exit_pairs import manage_trade_exits
 from func_messaging import send_message
-from func_ema import calculate_price_ema_pair
+from func_ema import calculate_price_ema_pair, placeOrder
+from func_utils import wait_until_half_hour
 
 import sys, os, json
+from datetime import datetime
 
 
 async def main():
   # Message on start
   send_message("Bot launch successful")
-
+  startCount = 0
+  
   # Connect to client
   try:
     print("")
@@ -46,6 +49,10 @@ async def main():
       if botAgentsLine == []:
         botAgentsEmpty = True
   print("Positions closed.")
+  
+  # Wait until 30 minute update happens
+  # wait_until_half_hour()
+
   # Need to be able to get all market prices. Put into table, then find, based on prices, which pairs are cointegrated
   # Bot doesn't need to continually fetch market prices. Only about once an hour/once a day since it takes a while.
   lastAction="BUY"
@@ -57,12 +64,34 @@ async def main():
         print("Error calculating EMA: ", e)
         send_message(f"Error calculating EMA {e}")
         exit(1)
+  print(f"Last Price: {lastPrice}")
   if lastPrice > lastEma:
     lastAction = "BUY"
+    print("start action: BUY")
+    
   else:
+    print("start action: SELL")
     lastAction = "SELL"
 
+  try:
+    print("Placing initial order...")
+    order,order_id = await placeOrder(client, "ETH-USD", 0.1, lastPrice, lastAction)
+  except Exception as e:
+    print("Error placing initial order: ", e)
+    send_message(f"Error placing initial order {e}")
+    exit(1)
+  
+  if order is None or order_id is None:
+    print("Error placing initial order: Order or Order ID is None")
+    send_message("Error placing initial order: Order or Order ID is None")
+    exit(1)
+
   while True:
+    if startCount>3:
+      print("Bot has been restarted too many times. Exiting...")
+      send_message("Bot has been restarted too many times. Check dashboard. Exiting...")
+      exit(1)
+    wait_until_half_hour()
     # Calculate EMA
     if CALCUATE_EMA:
       try:
@@ -74,16 +103,50 @@ async def main():
         print("Error calculating EMA: ", e)
         send_message(f"Error calculating EMA {e}")
         exit(1)
-    
+    makeNewOrder = False
     if lastPrice > lastEma and lastAction != "BUY":
       lastAction = "BUY"
       print("Last action: BUY")
       send_message("Last action: BUY")
+      makeNewOrder = True
     elif lastPrice <= lastEma and lastAction != "SELL":
       lastAction = "SELL"
       print("Last action: SELL")
       send_message("Last action: SELL")
-    time.sleep(1800)
+      makeNewOrder = True
+
+    if makeNewOrder:
+      try:
+        print("Placing order...")
+        send_message("Placing order...")
+        send_message(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        order, order_id = await placeOrder(client, "ETH-USD", 0.2, lastPrice, lastAction)
+      except Exception as e:
+        print("Restarting...")
+        startCount+=1
+        print("Error placing order: ", e)
+        send_message(f"Restarting while loop due to error - {startCount}")
+        try:
+          print("")
+          print("Closing open positions...")
+          await abort_all_positions(client)
+        except Exception as e:
+          print("Error closing all positions: ", e)
+          send_message(f"Error closing all positions {e}. Check manually.")
+          exit(1)
+        time.sleep(1)
+        continue
+
+    
+
+    
+    time.sleep(1)
+
+
+
+
+
+
 #   if FIND_COINTEGRATED:
 #     # Construct Market Prices
 #     try:
@@ -131,7 +194,7 @@ async def main():
 #       try:
 #         print("")
 #         print("Finding trading opportunities...")
-#         await openPositions(client)
+        # await openPositions(client)
 #       except Exception as e:
 #         print("Error trading pairs: ", e)
 #         send_message(f"Error opening trades {e}")

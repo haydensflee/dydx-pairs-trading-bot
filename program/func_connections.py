@@ -33,7 +33,7 @@ async def connect_dydx():
   node = await NodeClient.connect(TESTNET.node)
   wallet = await Wallet.from_mnemonic(node, MNEMONIC, DYDX_ADDRESS)
   client = Client(indexer, indexer_account, node, wallet)
-  # await check_juristiction(client, "BTC-USD")
+  await check_juristiction(client, "ETH-USD")
   return client
 
 # Check Juristiction
@@ -41,7 +41,7 @@ async def connect_dydx():
 # This function serves as a check
 async def check_juristiction(client, market):
 
-  print("Checking Juristiction...")
+  print("Checking Jurisdiction...")
 
   try:
     await getCandlesRecent(client, market)

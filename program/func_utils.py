@@ -3,6 +3,8 @@ func_utils.py
 This file contains all the utility functions that are used in the program.
 '''
 from datetime import datetime, timedelta
+import time
+from datetime import datetime, timedelta
 
 # Format number
 def format_number(curr_num, match_num):
@@ -64,3 +66,17 @@ def get_ISO_times():
 
   # Return result
   return times_dict
+
+
+def wait_until_half_hour():
+  now = datetime.now()
+  # Round up to the next 00 or 30 minute mark
+  if now.minute < 30:
+      next_run = now.replace(minute=30, second=0, microsecond=0)
+  else:
+      next_run = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+
+  seconds_to_sleep = (next_run - now).total_seconds()
+  # seconds_to_sleep = 60
+  print(f"Sleeping for {int(seconds_to_sleep)} seconds until {next_run.strftime('%H:%M:%S')}")
+  time.sleep(seconds_to_sleep)

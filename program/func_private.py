@@ -122,7 +122,6 @@ async def place_market_order(client, market, side, size, price, reduce_only):
     if client_id == market_order_id.client_id and clob_pair_id == market_order_id.clob_pair_id:
       order_id = order["id"]
       break
-
   # Ensure latest order
   if order_id == "":
     sorted_orders = sorted(orders, key=lambda x: x["createdAtHeight"], reverse=True)

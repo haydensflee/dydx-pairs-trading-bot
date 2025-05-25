@@ -1,8 +1,12 @@
+from dydx_v4_client import MAX_CLIENT_ID, Order, OrderFlags
+from dydx_v4_client.node.market import Market, since_now
+from dydx_v4_client.indexer.rest.constants import OrderType
 from dydx_v4_client import NodeClient, Wallet
 from dydx_v4_client.indexer.rest.indexer_client import IndexerClient
 from dydx_v4_client.network import TESTNET
 from constants import INDEXER_ACCOUNT_ENDPOINT, INDEXER_ENDPOINT_MAINNET, MNEMONIC, DYDX_ADDRESS, MARKET_DATA_MODE
-from func_public import getCandlesRecent
+from func_utils import format_number
+from func_private import place_market_order, checkOrderStatus, cancel_order
 from constants import RESOLUTION, EMA_PERIOD, SMOOTHING_FACTOR
 
 import time
@@ -63,3 +67,48 @@ async def get_close_prices(client, market):
     close_prices.reverse()
 
     return close_prices
+
+async def placeOrder(client, market, size, price, side):
+    """
+    Place an order for a given market.
+    """
+    marketPrice = price
+    if side == "BUY":
+        marketPrice = format_number(price * 1.01,price)  # Adjust price for buy orders
+    elif side == "SELL":
+        marketPrice = format_number(price * 0.99, price)
+        
+    order, order_id = await place_market_order(client, market, side, size, marketPrice, False)
+    orderStatus = await checkOrderStatus(client, order_id)
+
+    if orderStatus == "CANCELED":
+        print(f"Order {order_id} was canceled.")
+        await cancel_order(client, order_id)
+        return None, None
+    
+    if orderStatus != "FAILED":
+        time.sleep(15)
+        orderStatus = await checkOrderStatus(client, order_id)
+
+        # Guard: If order cancelled move onto next Pair
+        if orderStatus == "CANCELED":
+            print(f"Order {order_id} was canceled.")
+            await cancel_order(client, order_id)
+            return None, None        
+        if orderStatus != "FILLED":
+            await cancel_order(client, order_id)
+            print(f"Order {order_id} was not filled. Cancellation request sent, please check open orders..")
+            return None, None
+
+    orderDict = {
+        "market": market,
+        "size": size,
+        "price": marketPrice,
+        "side": side,
+        "order_id": order_id,
+        "order": order
+    }
+
+    # Place the order
+    return order, order_id
+

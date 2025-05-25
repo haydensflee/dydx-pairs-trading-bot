@@ -34,7 +34,6 @@ async def getCandlesRecent(client, market):
   # Structure data
   for candle in candles["candles"]:
     close_prices.append(candle["close"])
-    print(candle["close"])
 
   # Construct and return close price series
   close_prices.reverse()
