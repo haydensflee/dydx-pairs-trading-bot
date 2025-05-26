@@ -30,7 +30,7 @@ async def main():
     print("Error connecting to client: ", e)
     send_message(f"Error connecting to client {e}")
     exit(1)
-
+  send_message("Connected to Client")
 #   # Abort all open positions
   if ABORT_ALL_POSITIONS:
     botAgentsEmpty = False
@@ -41,7 +41,7 @@ async def main():
         await abort_all_positions(client)
       except Exception as e:
         print("Error closing all positions: ", e)
-        # send_message(f"Error closing all positions {e}")
+        send_message(f"Error closing all positions {e}")
         # exit(1)
       file_path = "bot_agents.json"
       with open(file_path, 'r') as file:
