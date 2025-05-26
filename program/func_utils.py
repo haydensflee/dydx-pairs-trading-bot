@@ -77,6 +77,6 @@ def wait_until_half_hour():
       next_run = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
 
   seconds_to_sleep = (next_run - now).total_seconds()
-  # seconds_to_sleep = 60
+  # seconds_to_sleep = 30
   print(f"Sleeping for {int(seconds_to_sleep)} seconds until {next_run.strftime('%H:%M:%S')}")
   time.sleep(seconds_to_sleep)

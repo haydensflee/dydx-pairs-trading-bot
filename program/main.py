@@ -57,13 +57,13 @@ async def main():
   # Bot doesn't need to continually fetch market prices. Only about once an hour/once a day since it takes a while.
   lastAction="BUY"
   if CALCUATE_EMA:
-      try:
-        print("Calculating EMA...")
-        lastPrice, lastEma = await calculate_price_ema_pair(client, "ETH-USD")
-      except Exception as e:
-        print("Error calculating EMA: ", e)
-        send_message(f"Error calculating EMA {e}")
-        exit(1)
+    try:
+      print("Calculating EMA...")
+      lastPrice, lastEma = await calculate_price_ema_pair(client, "ETH-USD")
+    except Exception as e:
+      print("Error calculating EMA: ", e)
+      send_message(f"Error calculating EMA {e}")
+      exit(1)
   print(f"Last Price: {lastPrice}")
   if lastPrice > lastEma:
     lastAction = "BUY"
@@ -73,8 +73,11 @@ async def main():
     print("start action: SELL")
     lastAction = "SELL"
 
+  # delete
+  # lastAction = "BUY"
   try:
     print("Placing initial order...")
+    send_message("Placing initial order...")
     order,order_id = await placeOrder(client, "ETH-USD", 0.1, lastPrice, lastAction)
   except Exception as e:
     print("Error placing initial order: ", e)
@@ -115,6 +118,9 @@ async def main():
       send_message("Last action: SELL")
       makeNewOrder = True
 
+    # delete
+    # makeNewOrder = True
+    # lastAction = "SELL"
     if makeNewOrder:
       try:
         print("Placing order...")

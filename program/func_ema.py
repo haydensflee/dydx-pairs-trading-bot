@@ -81,24 +81,24 @@ async def placeOrder(client, market, size, price, side):
     order, order_id = await place_market_order(client, market, side, size, marketPrice, False)
     orderStatus = await checkOrderStatus(client, order_id)
 
-    if orderStatus == "CANCELED":
-        print(f"Order {order_id} was canceled.")
-        await cancel_order(client, order_id)
-        return None, None
+    # if orderStatus == "CANCELED":
+    #     print(f"Order {order_id} was canceled.")
+    #     await cancel_order(client, order_id)
+    #     return None, None
     
-    if orderStatus != "FAILED":
-        time.sleep(15)
-        orderStatus = await checkOrderStatus(client, order_id)
+    # if orderStatus != "FAILED":
+    #     time.sleep(15)
+    #     orderStatus = await checkOrderStatus(client, order_id)
 
-        # Guard: If order cancelled move onto next Pair
-        if orderStatus == "CANCELED":
-            print(f"Order {order_id} was canceled.")
-            await cancel_order(client, order_id)
-            return None, None        
-        if orderStatus != "FILLED":
-            await cancel_order(client, order_id)
-            print(f"Order {order_id} was not filled. Cancellation request sent, please check open orders..")
-            return None, None
+    #     # Guard: If order cancelled move onto next Pair
+    #     if orderStatus == "CANCELED":
+    #         print(f"Order {order_id} was canceled.")
+    #         await cancel_order(client, order_id)
+    #         return None, None        
+    #     if orderStatus != "FILLED":
+    #         await cancel_order(client, order_id)
+    #         print(f"Order {order_id} was not filled. Cancellation request sent, please check open orders..")
+    #         return None, None
 
     orderDict = {
         "market": market,
