@@ -119,18 +119,18 @@ async def main():
       makeNewOrder = True
 
     # delete
-    # makeNewOrder = True
+    makeNewOrder = False
     # lastAction = "SELL"
     if makeNewOrder:
       try:
         print("Placing order...")
         send_message("Placing order...")
         send_message(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        order, order_id = await placeOrder(client, "ETH-USD", 0.2, lastPrice, lastAction)
+        order, order_id = await placeOrder(client, "ETH-USD", 0.1, lastPrice, lastAction)
       except Exception as e:
         print("Restarting...")
         startCount+=1
-        print("Error placing order: ", e)
+        send_message("Error placing order: ", e)
         send_message(f"Restarting while loop due to error - {startCount}")
         try:
           print("")
