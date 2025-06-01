@@ -118,19 +118,31 @@ async def main():
       send_message("Last action: SELL")
       makeNewOrder = True
 
+
     # delete
-    makeNewOrder = False
+    # if lastAction == "BUY":
+    #   lastAction="SELL"
+    # else:
+    #   lastAction="BUY"
+    # makeNewOrder = True
     # lastAction = "SELL"
     if makeNewOrder:
       try:
         print("Placing order...")
         send_message("Placing order...")
         send_message(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        order, order_id = await placeOrder(client, "ETH-USD", 0.1, lastPrice, lastAction)
+        for i in range(50):
+          try:
+              order, order_id = await placeOrder(client, "ETH-USD", 0.1, lastPrice, lastAction)
+              break  # success
+          except Exception as e:
+              print(f"Attempt {i+1}: gRPC failed: {e}")
+              time.sleep(2 ** i)  # backoff
+        
       except Exception as e:
         print("Restarting...")
         startCount+=1
-        send_message("Error placing order: ", e)
+        send_message(f"Error placing order: {e}. Restarting...")
         send_message(f"Restarting while loop due to error - {startCount}")
         try:
           print("")

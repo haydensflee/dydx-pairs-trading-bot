@@ -114,22 +114,27 @@ async def place_market_order(client, market, side, size, price, reduce_only):
   order_id = ""
   # print("Orders:")
   # print(orders)
+  print(f"market_order_id (client_id and clob_pair_id): {market_order_id.client_id}, {market_order_id.clob_pair_id}")
   for order in orders:
     client_id = int(order["clientId"])
     clob_pair_id = int(order["clobPairId"])
     order["createdAtHeight"] = int(order["createdAtHeight"])
     # print(order["createdAtHeight"])
+    # print(f"current order client_id and clob_pair_id: {client_id}, {clob_pair_id}")
+
     if client_id == market_order_id.client_id and clob_pair_id == market_order_id.clob_pair_id:
       order_id = order["id"]
       break
+  print(f"current order client_id and clob_pair_id: {client_id}, {clob_pair_id}")
   # Ensure latest order
   if order_id == "":
     sorted_orders = sorted(orders, key=lambda x: x["createdAtHeight"], reverse=True)
     print("last order:")
     pprint(sorted_orders[0])
     print("Warning: Unable to detect latest order. Please check dashboard")
-    return (-1,sorted_orders[0]["id"])
-    # exit(1)
+    # return (-1,sorted_orders[0]["id"])
+    raise Exception("Unable to detect latest order. Please check dashboard")
+    exit(1)
 
   # Print something if error returned
   if "code" in str(order):

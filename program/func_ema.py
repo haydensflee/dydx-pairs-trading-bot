@@ -8,6 +8,7 @@ from constants import INDEXER_ACCOUNT_ENDPOINT, INDEXER_ENDPOINT_MAINNET, MNEMON
 from func_utils import format_number
 from func_private import place_market_order, checkOrderStatus, cancel_order
 from constants import RESOLUTION, EMA_PERIOD, SMOOTHING_FACTOR
+from func_messaging import send_message
 
 import time
 
@@ -79,7 +80,9 @@ async def placeOrder(client, market, size, price, side):
         marketPrice = format_number(price * 0.99, price)
         
     order, order_id = await place_market_order(client, market, side, size, marketPrice, False)
+    send_message(f"Order and order_id: {order}, {order_id}")
     orderStatus = await checkOrderStatus(client, order_id)
+    send_message(f"Order Status: {orderStatus}")
 
     # if orderStatus == "CANCELED":
     #     print(f"Order {order_id} was canceled.")
