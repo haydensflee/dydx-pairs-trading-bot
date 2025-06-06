@@ -80,3 +80,14 @@ def wait_until_half_hour():
   # seconds_to_sleep = 30
   print(f"Sleeping for {int(seconds_to_sleep)} seconds until {next_run.strftime('%H:%M:%S')}")
   time.sleep(seconds_to_sleep)
+
+
+def wait_until_midnight():
+  now = datetime.now()
+  # Calculate the next midnight
+  tomorrow = now + timedelta(days=1)
+  midnight = datetime.combine(tomorrow.date(), datetime.min.time())
+
+  seconds_until_midnight = (midnight - now).total_seconds()
+  print(f"Waiting {int(seconds_until_midnight)} seconds until midnight...")
+  time.sleep(seconds_until_midnight)

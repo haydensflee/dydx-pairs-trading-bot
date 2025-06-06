@@ -11,8 +11,14 @@ from constants import RESOLUTION, EMA_PERIOD, SMOOTHING_FACTOR
 from func_messaging import send_message
 
 import time
+from datetime import datetime, timedelta
+import pandas as pd
+import numpy as np
+import ta
 
 import matplotlib.pyplot as plt
+
+
 
 async def calculate_price_ema_pair(client, market):
     """
@@ -42,6 +48,105 @@ async def calculate_price_ema_pair(client, market):
 
     return (lastPrice, lastEMA)
     
+async def get_close_prices_100_days(client,market):
+    # Define the market and resolution
+    
+    resolution = '1HOUR'  # daily candles
+
+    # Calculate the time range for the past 100 days
+    end_time = datetime.utcnow()
+    start_time = end_time - timedelta(days=100)
+
+    # Convert to ISO 8601 format
+    from_iso = start_time.isoformat()
+    to_iso = end_time.isoformat()
+
+    # Fetch the candles
+    response = await client.indexer.markets.get_perpetual_market_candles(
+        market=market,
+        resolution=resolution,
+        from_iso=from_iso,
+        to_iso=to_iso,
+        limit=100
+    )
+
+    candles = response['candles']
+    # Convert list of candle dicts into a DataFrame
+    df = pd.DataFrame(candles)
+
+    # Convert timestamp to datetime
+    df['timestamp'] = pd.to_datetime(df['startedAt'])
+
+    # Convert price columns to numeric
+    price_cols = ['open', 'high', 'low', 'close']
+    df[price_cols] = df[price_cols].astype(float)
+
+    # Optional: sort by time
+    df = df.sort_values('timestamp').reset_index(drop=True)
+
+    # Select desired columns
+    df_candles = df[['timestamp', 'open', 'high', 'low', 'close']]
+    return df_candles
+
+async def getSignals(df, key_value=1, atr_period=10):
+
+    src = df['close']
+
+    # Calculate ATR
+    atr = ta.volatility.AverageTrueRange(df['high'], df['low'], df['close'], window=atr_period).average_true_range()
+    nLoss = key_value * atr
+
+    # Initialize Trailing Stop
+    xATRTrailingStop = pd.Series(index=src.index, dtype='float64')
+    pos = pd.Series(index=src.index, dtype='int')
+
+    for i in range(len(df)):
+        if i == 0:
+            xATRTrailingStop.iloc[i] = src.iloc[i] + nLoss.iloc[i]
+            pos.iloc[i] = 0
+        else:
+            prev_stop = xATRTrailingStop.iloc[i-1]
+            prev_src = src.iloc[i-1]
+
+            if src.iloc[i] > prev_stop and prev_src > prev_stop:
+                xATRTrailingStop.iloc[i] = max(prev_stop, src.iloc[i] - nLoss.iloc[i])
+            elif src.iloc[i] < prev_stop and prev_src < prev_stop:
+                xATRTrailingStop.iloc[i] = min(prev_stop, src.iloc[i] + nLoss.iloc[i])
+            elif src.iloc[i] > prev_stop:
+                xATRTrailingStop.iloc[i] = src.iloc[i] - nLoss.iloc[i]
+            else:
+                xATRTrailingStop.iloc[i] = src.iloc[i] + nLoss.iloc[i]
+
+            # Position
+            if prev_src < prev_stop and src.iloc[i] > prev_stop:
+                pos.iloc[i] = 1
+            elif prev_src > prev_stop and src.iloc[i] < prev_stop:
+                pos.iloc[i] = -1
+            else:
+                pos.iloc[i] = pos.iloc[i-1]
+
+    # EMA
+    ema = src.ewm(span=1, adjust=False).mean()
+
+    above = (ema > xATRTrailingStop) & (ema.shift(1) <= xATRTrailingStop.shift(1))
+    below = (xATRTrailingStop > ema) & (xATRTrailingStop.shift(1) <= ema.shift(1))
+
+    buy = (src > xATRTrailingStop) & above
+    sell = (src < xATRTrailingStop) & below
+
+    barbuy = src > xATRTrailingStop
+    barsell = src < xATRTrailingStop
+
+    lastTrailingStop = xATRTrailingStop.iloc[-1]
+    send_message(f"Last Trailing Stop: {lastTrailingStop} | Last price: {src.iloc[-1]}")
+
+    # Add signals to the DataFrame
+    df['buy_signal'] = buy
+    df['sell_signal'] = sell
+    df['position'] = pos
+
+    return df
+
 
 async def get_close_prices(client, market):
     """
