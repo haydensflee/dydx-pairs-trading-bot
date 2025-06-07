@@ -60,11 +60,19 @@ async def main():
   if CALCUATE_EMA:
     dataframe = await get_close_prices_100_days(client, "ETH-USD")
     print(dataframe)
-
+    
     signalDataframe = await getSignals(dataframe)
     print(signalDataframe[signalDataframe['buy_signal']])
     print(signalDataframe[signalDataframe['sell_signal']])
-  
+    lastSignalDataframe = signalDataframe.iloc[-1]
+    buy_signal = lastSignalDataframe['buy_signal']
+    sell_signal = lastSignalDataframe['sell_signal']
+    print(f"Last signal dataframe:\n{lastSignalDataframe}")
+    print(f"Buy signal: {buy_signal}, Sell signal: {sell_signal}")
+    send_message(f"Last signal dataframe:\n{lastSignalDataframe}")
+    send_message(f"Buy signal: {buy_signal}, Sell signal: {sell_signal}")
+
+
   #   try:
   #     print("Calculating EMA...")
   #     lastPrice, lastEma = await calculate_price_ema_pair(client, "ETH-USD")
@@ -96,26 +104,19 @@ async def main():
   #   print("Error placing initial order: Order or Order ID is None")
   #   send_message("Error placing initial order: Order or Order ID is None")
   #   exit(1)
-  time.sleep(1)
-  send_message("Starting new loop...")
-  dataframe = await get_close_prices_100_days(client, "ETH-USD")
-  signalDataframe = await getSignals(dataframe)
-  lastSignalDataframe = signalDataframe.iloc[-1]
-  send_message(f"Last signal dataframe:\n{lastSignalDataframe}")
-  print(f"Last signal dataframe:\n{lastSignalDataframe}")
+  
   while True:
     wait_until_half_hour()
     wait_until_half_hour()
-    # wait_until_midnight()
     time.sleep(1)
     send_message("Starting new loop...")
     dataframe = await get_close_prices_100_days(client, "ETH-USD")
     signalDataframe = await getSignals(dataframe)
-    lastSignalDataframe = signalDataframe[signalDataframe['buy_signal'] | signalDataframe['sell_signal']]
-
-    send_message(f"Last signal dataframe:\n{lastSignalDataframe}")
-    last_frame = dataframe.iloc[-1]
-    lastPrice = last_frame['close']
+    lastSignalDataframe = signalDataframe.iloc[-1]
+    buy_signal = lastSignalDataframe['buy_signal']
+    sell_signal = lastSignalDataframe['sell_signal']
+    if buy_signal or sell_signal:
+      send_message(f"Last signal dataframe:\n{lastSignalDataframe}")
 
     
 

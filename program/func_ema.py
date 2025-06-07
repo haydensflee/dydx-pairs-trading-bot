@@ -51,6 +51,7 @@ async def calculate_price_ema_pair(client, market):
 async def get_close_prices_100_days(client,market):
     # Define the market and resolution
     
+    resolution = '1DAY'
     resolution = '1HOUR'  # daily candles
 
     # Calculate the time range for the past 100 days
