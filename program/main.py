@@ -70,8 +70,7 @@ async def main():
     print(f"Last signal dataframe:\n{lastSignalDataframe}")
     print(f"Buy signal: {buy_signal}, Sell signal: {sell_signal}")
     send_message(f"Last signal dataframe:\n{lastSignalDataframe}")
-    send_message(f"Buy signal: {buy_signal}, Sell signal: {sell_signal}")
-
+    send_message(f"Detected signal \nBuy signal: {buy_signal}, Sell signal: {sell_signal}")
 
   #   try:
   #     print("Calculating EMA...")
@@ -116,6 +115,7 @@ async def main():
     buy_signal = lastSignalDataframe['buy_signal']
     sell_signal = lastSignalDataframe['sell_signal']
     if buy_signal or sell_signal:
+      send_message(f"Detected signal \nBuy signal: {buy_signal}, Sell signal: {sell_signal}")
       send_message(f"Last signal dataframe:\n{lastSignalDataframe}")
 
     

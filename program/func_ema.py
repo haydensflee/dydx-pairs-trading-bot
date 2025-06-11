@@ -55,7 +55,7 @@ async def get_close_prices_100_days(client,market):
     resolution = '1HOUR'  # daily candles
 
     # Calculate the time range for the past 100 days
-    end_time = datetime.utcnow()
+    end_time = datetime.now()
     start_time = end_time - timedelta(days=100)
 
     # Convert to ISO 8601 format
