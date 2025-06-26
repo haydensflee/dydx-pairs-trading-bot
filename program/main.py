@@ -119,9 +119,39 @@ async def main():
     lastSignalDataframe = signalDataframe.iloc[-1]
     buy_signal = lastSignalDataframe['buy_signal']
     sell_signal = lastSignalDataframe['sell_signal']
+    lastPrice = lastSignalDataframe['close']
+    if buy_signal and not sell_signal:
+      action = "BUY"
+    elif sell_signal and not buy_signal:
+      action = "SELL"
+
     if buy_signal or sell_signal:
       send_message(f"Detected signal \nBuy signal: {buy_signal}, Sell signal: {sell_signal}")
       send_message(f"Last signal dataframe:\n{lastSignalDataframe}")
+    
+      try:
+        print("Placing order...")
+        send_message("Placing order...")
+        send_message(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+        for i in range(50):
+          try:
+            order, order_id = await placeOrder(client, "ETH-USD", 0.1, lastPrice, action)
+            break  # success
+          except Exception as e:
+            print(f"Attempt {i+1}: gRPC failed: {e}")
+            time.sleep(2 ** i)  # backoff
+        
+      except Exception as e:
+        print("Restarting...")
+        send_message(f"Error placing order: {e}. Restarting...")
+        try:
+          print("")
+          print("Closing open positions...")
+          await abort_all_positions(client)
+        except Exception as e:
+          print("Error closing all positions: ", e)
+          send_message(f"Error closing all positions {e}. Check manually.")
+          exit(1)
 
     
 
