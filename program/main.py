@@ -21,17 +21,22 @@ async def main():
   send_message("Bot launch successful")
   startCount = 0
   
-  # Connect to client
-  try:
-    print("")
-    print("Program started...")
-    print("Connecting to Client...")
-    client = await connect_dydx()
-  except Exception as e:
-    print("Error connecting to client: ", e)
-    send_message(f"Error connecting to client {e}")
-    exit(1)
-  send_message("Connected to Client")
+  # Connect to client with retries
+  max_attempts = 5
+  for attempt in range(1, max_attempts + 1):
+      try:
+          print("")
+          print(f"Program started... (Attempt {attempt})")
+          print("Connecting to Client...")
+          client = await connect_dydx()
+          send_message("Connected to Client")
+          break
+      except Exception as e:
+          print(f"Error connecting to client (Attempt {attempt}): ", e)
+          send_message(f"Error connecting to client (Attempt {attempt}): {e}")
+          if attempt == max_attempts:
+              exit(1)
+          await asyncio.sleep(2 * attempt)  # Exponential backoff
 #   # Abort all open positions
   if ABORT_ALL_POSITIONS:
     botAgentsEmpty = False
